@@ -1,3 +1,6 @@
+#![feature(lazy_cell)]
+#![feature(ptr_sub_ptr)]
+
 use fps_config::fps_settings_callback;
 
 pub mod fps_config;
@@ -14,7 +17,11 @@ pub fn main() {
     cobapi::install_global_game_setting(fps_settings_callback);
     skyline::install_hooks!(
         fps_hooks::vsync_count_hook,
-        fps_hooks::get_player_max_speed_hook
+        fps_hooks::get_player_max_speed_hook,
+        fps_hooks::get_player_accel_hook,
+        fps_hooks::get_player_decel_hook,
+        fps_hooks::get_player_rotate_speed_rate_hook
+        // fps_hooks::get_player_dash_stop_time_hook
     );
     println!(
         "{}",
