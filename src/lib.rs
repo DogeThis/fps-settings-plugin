@@ -20,5 +20,5 @@ pub fn main() {
         "{}",
         format!("FPS Settings Plugin  {}", env!("CARGO_PKG_VERSION"))
     );
-    println!("Source code available at https://github.com/DogeThis/tbd");
+    println!("Source code available at https://github.com/DogeThis/fps-settings-plugin");
 }
