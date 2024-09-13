@@ -8,21 +8,22 @@ pub fn vsync_count_hook(_: i32, method_info: OptionalMethod) {
         CURRENT_FPS = fps;
     }
 
-    match fps {
-        120 => call_original!(0, method_info), // hidden from menu, set via config---vsync 0 breaks everything...
-        60  => call_original!(1, method_info),
-        30  => call_original!(2, method_info),
-        _   => call_original!(2, method_info) // fallback to 30 fps if invalid setting
-    }
+    call_original!(
+        match fps {
+            120 => 0, // hidden from menu, set via config---vsync 0 breaks everything...
+            60  => 1,
+            30  => 2,
+            _   => 2, // fallback to 30 fps if invalid setting
+        },
+        method_info
+    );
 }
 
 fn speed_modifier() -> f32 {
-    unsafe {
-        let speed_mod = 30.0 / CURRENT_FPS as f32;
+    let speed_mod = 30.0 / unsafe { CURRENT_FPS } as f32;
 
-        // this ensures *most* of the other speed hooks work close to how they would at 30fps
-        return speed_mod * speed_mod;
-    }
+    // this ensures *most* of the other speed hooks work close to how they would at 30fps
+    return speed_mod * speed_mod;
 }
 
 // App.HubUtil$$get_PlayerMaxSpeed	7102a5e820	float App.HubUtil$$get_PlayerMaxSpeed(MethodInfo * method)	96
