@@ -1,5 +1,5 @@
-use crate::{fps_config::get_fps_with_default, CURRENT_FPS};
-use unity::prelude::*;
+use crate::{fps_config::get_fps_with_default, ACCURATE_MOVEMENT, CURRENT_FPS};
+use unity::{engine::Vector3, prelude::*};
 
 #[skyline::hook(offset = 0x250cda0)]
 pub fn vsync_count_hook(_: i32, method_info: OptionalMethod) {
@@ -21,6 +21,11 @@ pub fn vsync_count_hook(_: i32, method_info: OptionalMethod) {
 
 fn speed_modifier() -> f32 {
     let speed_mod = 30.0 / unsafe { CURRENT_FPS } as f32;
+
+    // Override return value if Accurate Movement is disabled in settings
+    if unsafe { !ACCURATE_MOVEMENT } {
+        return 1.0;
+    }
 
     // this ensures *most* of the other speed hooks work close to how they would at 30fps
     return speed_mod * speed_mod;
@@ -55,11 +60,3 @@ pub fn get_player_rotate_speed_rate_hook(method_info: OptionalMethod) -> f32 {
 
     return speed_modifier().sqrt() * rotate_rate;
 }
-
-// #[unity::hook("App", "HubUtil", "get_PlayerDashStopTime")]
-// pub fn get_player_dash_stop_time_hook(method_info: OptionalMethod) -> f32 {
-//     let dash_stop_time = call_original!(method_info);
-
-//     // return speed_modifier() * dash_stop_time;
-//     return dash_stop_time;
-// }
