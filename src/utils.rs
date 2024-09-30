@@ -67,28 +67,57 @@ pub fn read_from_path<T: FromStr>(path: &str) -> Option<T> {
     }
 }
 
+pub const SETTINGS_PATH: &str = "sd:/engage/fps_settings_plugin/";
+
+fn config_path(filename: &str) -> String {
+    return format!("{}{}", SETTINGS_PATH, filename);
+}
+
+pub fn get_config<T: FromStr>(filename: &str, default_value: T) -> T {
+    read_from_path(config_path(filename).as_str()).unwrap_or(default_value)
+}
+
+pub fn save_config<T: ToString>(filename: &str, value: T) {
+    write_to_path(config_path(filename).as_str(), &value.to_string());
+}
+
+pub fn on_str() -> &'static Il2CppString { Mess::get("MID_CONFIG_TUTORIAL_ON") }
+pub fn off_str() -> &'static Il2CppString { Mess::get("MID_CONFIG_TUTORIAL_OFF") }
+
 static EN_US: phf::Map<&str, &str> = phf_map! {
     "fps_name" => "Frame Rate (FPS)",
     "fps_helptext_30" => "The game's default.",
     "fps_helptext_60" => "Smoother gameplay.",
+    "mov_name" => "Accurate Movement",
     "mov_helptext_off" => "Do not use accurate movement above 30 FPS.",
-    "mov_helptext_on" => "Use accurate movement above 30 FPS."
+    "mov_helptext_on" => "Use accurate movement above 30 FPS.",
+    "spd_name" => "Accurate Speed",
+    "spd_helptext_off" => "Do not adjust movement speed at high frame rates.",
+    "spd_helptext_on" => "Adjust movement speed at high frame rates."
 };
 
 static JP: phf::Map<&str, &str> = phf_map! {
     "fps_name" => "フレームレート (FPS)",
     "fps_helptext_30" => "ゲームのデフォルト",
     "fps_helptext_60" => "より滑らかなゲームプレイ",
+    "mov_name" => "Accurate Movement",
     "mov_helptext_off" => "30 FPS を超える正確な動きを使用しないでください.",
-    "mov_helptext_on" => "30 FPS を超える正確な動きを使用します."
+    "mov_helptext_on" => "30 FPS を超える正確な動きを使用します.",
+    "spd_name" => "Accurate Speed",
+    "spd_helptext_off" => "Do not adjust movement speed at high frame rates.",
+    "spd_helptext_on" => "Adjust movement speed at high frame rates."
 };
 
 static EU_FR: phf::Map<&str, &str> = phf_map! {
     "fps_name" => "Fréquence d'image (FPS)",
     "fps_helptext_30" => "La fréquence de base.",
     "fps_helptext_60" => "Une expérience plus fluide.",
+    "mov_name" => "Accurate Movement",
     "mov_helptext_off" => "N'utilisez pas de mouvement précis au-dessus de 30 FPS.",
-    "mov_helptext_on" => "Utilisez des mouvements précis au-dessus de 30 FPS."
+    "mov_helptext_on" => "Utilisez des mouvements précis au-dessus de 30 FPS.",
+    "spd_name" => "Accurate Speed",
+    "spd_helptext_off" => "Do not adjust movement speed at high frame rates.",
+    "spd_helptext_on" => "Adjust movement speed at high frame rates."
 };
 
 pub fn localize(key: &str) -> String {
@@ -106,6 +135,3 @@ pub fn localize(key: &str) -> String {
     };
     return map[key].to_string();
 }
-
-pub fn on_str() -> &'static Il2CppString { Mess::get("MID_CONFIG_TUTORIAL_ON") }
-pub fn off_str() -> &'static Il2CppString { Mess::get("MID_CONFIG_TUTORIAL_OFF") }
