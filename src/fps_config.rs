@@ -6,16 +6,15 @@ use unity::prelude::*;
 
 use crate::{
     fps_hooks::vsync_count_hook,
-    utils::{localize, read_from_path, write_to_path},
+    utils::{get_config, localize, save_config},
     CURRENT_FPS,
 };
 pub struct FPSSetting;
-pub const FPS_PATH: &str = "sd:/engage/fps_settings_plugin/fps";
 
 impl ConfigBasicMenuItemSwitchMethods for FPSSetting {
     fn init_content(_this: &mut ConfigBasicMenuItem) {
         unsafe {
-            CURRENT_FPS = get_fps_with_default();
+            CURRENT_FPS = get_config("fps", 30);
         };
     }
 
@@ -28,7 +27,9 @@ impl ConfigBasicMenuItemSwitchMethods for FPSSetting {
         let result = ConfigBasicMenuItem::change_key_value_i(current_fps, 30, 60, 30);
 
         if current_fps != result {
-            save_fps(result);
+            unsafe { CURRENT_FPS = result };
+            save_config("fps", result);
+            vsync_count_hook(result, None);
             Self::set_help_text(this, None);
             Self::set_command_text(this, None);
             this.update_text();
@@ -53,24 +54,8 @@ impl ConfigBasicMenuItemSwitchMethods for FPSSetting {
     }
 }
 
-pub fn get_fps() -> Option<i32> {
-    read_from_path(FPS_PATH)
-}
-
-pub fn get_fps_with_default() -> i32 {
-    get_fps().unwrap_or(30)
-}
-
-pub fn save_fps(fps: i32) {
-    unsafe {
-        CURRENT_FPS = fps;
-    }
-    write_to_path(FPS_PATH, &format!("{:}", fps));
-    vsync_count_hook(fps, None);
-}
-
 #[no_mangle] // no_mangle is an attribute used to ask Rust not to modify your function name to facilitate communication with code from other sources.
 pub extern "C" fn fps_settings_callback() -> &'static mut ConfigBasicMenuItem {
     // Your callback must return a ConfigBasicMenu, which you can acquire by using new_gauge or new_switch.
-    ConfigBasicMenuItem::new_switch::<FPSSetting>("FPS Settings")
+    ConfigBasicMenuItem::new_switch::<FPSSetting>(localize("fps_name"))
 }
