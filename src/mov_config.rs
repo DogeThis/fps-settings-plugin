@@ -9,19 +9,13 @@ use engage::menu::{
 };
 
 use crate::{
-    utils::{get_config, localize, off_str, on_str, save_config},
+    utils::{localize, off_str, on_str, save_config},
     ACCURATE_MOVEMENT, ACCURATE_SPEED,
 };
 
 pub struct MovSetting;
 
 impl ConfigBasicMenuItemSwitchMethods for MovSetting {
-    fn init_content(_this: &mut ConfigBasicMenuItem) {
-        unsafe {
-            ACCURATE_MOVEMENT = get_config("mov", true);
-        };
-    }
-
     extern "C" fn custom_call(
         this: &mut ConfigBasicMenuItem,
         _method_info: OptionalMethod,
@@ -60,12 +54,6 @@ impl ConfigBasicMenuItemSwitchMethods for MovSetting {
 pub struct SpdSetting;
 
 impl ConfigBasicMenuItemSwitchMethods for SpdSetting {
-    fn init_content(_this: &mut ConfigBasicMenuItem) {
-        unsafe {
-            ACCURATE_SPEED = get_config("spd", true);
-        };
-    }
-
     extern "C" fn custom_call(
         this: &mut ConfigBasicMenuItem,
         _method_info: OptionalMethod,

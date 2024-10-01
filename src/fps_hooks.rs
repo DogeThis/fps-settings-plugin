@@ -1,23 +1,16 @@
-use crate::{utils::get_config, ACCURATE_MOVEMENT, ACCURATE_SPEED, CURRENT_FPS};
+use crate::{ACCURATE_MOVEMENT, ACCURATE_SPEED, CURRENT_FPS};
 use unity::prelude::*;
 
 #[skyline::hook(offset = 0x250cda0)]
 pub fn vsync_count_hook(_: i32, method_info: OptionalMethod) {
-    let fps: i32;
-    unsafe {
-        CURRENT_FPS = get_config("fps", 30);
-        fps = CURRENT_FPS;
-    }
-    
-    call_original!(
-        match fps {
-            120 => 0, // hidden from menu, set via config---vsync 0 breaks everything...
-            60  => 1,
-            30  => 2,
-            _   => 2, // fallback to 30 fps if invalid setting
-        },
-        method_info
-    );
+    let vsync = match unsafe { CURRENT_FPS } {
+        120 => 0, // hidden from menu, set via config---vsync 0 breaks everything...
+        60  => 1,
+        30  => 2,
+        _   => 2, // fallback to 30 fps if invalid setting
+    };
+
+    call_original!(vsync, method_info);
 }
 
 fn get_frametiming() -> f32 {
@@ -67,6 +60,15 @@ pub fn get_player_rotate_speed_rate_hook(method_info: OptionalMethod) -> f32 {
     return frametime_modifier().sqrt() * rotate_rate;
 }
 
+// #[unity::hook("App", "HubUtil", "get_PlayerDashStopTime")]
+// pub fn get_player_dash_stop_time_hook(method_info: OptionalMethod) -> f32 {
+//     let dash_stop_time = call_original!(method_info);
+
+//     // return speed_modifier() * dash_stop_time;
+//     return dash_stop_time;
+// }
+
+
 // NPC Handling
 
 // #[skyline::hook(offset = 0x23D3920)]
@@ -84,4 +86,28 @@ pub fn get_player_rotate_speed_rate_hook(method_info: OptionalMethod) -> f32 {
 //     println!("I AM RUNNING!!!!!!!!!!!");
 
 //     call_original!(this, unit, data, body_anim, face_anim, is_turn, modified_speed, method_info);
+// }
+
+
+
+// #[repr(C)]
+// pub struct AppHubMoveStateMoveO {
+//     _padding: [u8; 0x3C], // offset
+//     m_speed: f32,
+// }
+
+// // App.HubMoveStateMove$$IsEnd    71028bfae0    bool App.HubMoveStateMove$$IsEnd(App_HubMoveStateMove_o * __this, MethodInfo * method)    268
+// #[unity::hook("App", "HubMoveStateMove", "IsEnd")]
+// pub fn hub_move_state_move_is_end(this: *mut AppHubMoveStateMoveO, method_info: OptionalMethod) -> bool {
+//     println!("I AM end, i am alive too!!!!!!!!!!!");
+//     // unsafe {
+//     //     // dereference the raw pointer to access the struct
+//     //     let this_ref = &mut *this;
+
+//     //     let result = call_original!(this, method_info);
+
+//     //     this_ref.m_speed *= 0.5;
+//     //     result
+//     // }
+//     return call_original!(this, method_info);
 // }
