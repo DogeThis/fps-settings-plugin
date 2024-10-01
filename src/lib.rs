@@ -4,18 +4,29 @@
 use fps_config::fps_settings_callback;
 use mov_config::spd_settings_callback;
 use mov_config::mov_settings_callback;
+use utils::get_config;
 
 pub mod fps_config;
 pub mod fps_hooks;
 pub mod mov_config;
 pub mod utils;
 
-pub static mut CURRENT_FPS: i32 = 30;
+pub static mut CURRENT_FPS: i32 = 60;
 pub static mut ACCURATE_SPEED: bool = true;
 pub static mut ACCURATE_MOVEMENT: bool = true;
 
+fn load_config() {
+    unsafe {
+        CURRENT_FPS = get_config("fps", 60);
+        ACCURATE_SPEED = get_config("spd", true);
+        ACCURATE_MOVEMENT = get_config("mov", true);
+    }
+}
+
 #[skyline::main(name = "fps_settings_plugin")]
 pub fn main() {
+    // Loads configuration from files at runtime.
+    load_config();
     // Adds settings to the Settings menu, in-game.
     cobapi::install_game_setting(fps_settings_callback);
     cobapi::install_game_setting(spd_settings_callback);

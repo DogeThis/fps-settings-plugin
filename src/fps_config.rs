@@ -6,18 +6,12 @@ use unity::prelude::*;
 
 use crate::{
     fps_hooks::vsync_count_hook,
-    utils::{get_config, localize, save_config},
+    utils::{localize, save_config},
     CURRENT_FPS,
 };
 pub struct FPSSetting;
 
 impl ConfigBasicMenuItemSwitchMethods for FPSSetting {
-    fn init_content(_this: &mut ConfigBasicMenuItem) {
-        unsafe {
-            CURRENT_FPS = get_config("fps", 30);
-        };
-    }
-
     extern "C" fn custom_call(
         this: &mut ConfigBasicMenuItem,
         _method_info: OptionalMethod,
@@ -28,8 +22,8 @@ impl ConfigBasicMenuItemSwitchMethods for FPSSetting {
 
         if current_fps != result {
             unsafe { CURRENT_FPS = result };
+            vsync_count_hook(0, None);
             save_config("fps", result);
-            vsync_count_hook(result, None);
             Self::set_help_text(this, None);
             Self::set_command_text(this, None);
             this.update_text();
