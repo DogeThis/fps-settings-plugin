@@ -1,5 +1,4 @@
 use crate::{utils::get_config, ACCURATE_MOVEMENT, ACCURATE_SPEED, CURRENT_FPS};
-use engage::gamedata::unit;
 use unity::{engine::Vector3, prelude::*};
 
 #[skyline::hook(offset = 0x250cda0)]
