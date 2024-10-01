@@ -2,8 +2,8 @@
 #![feature(ptr_sub_ptr)]
 
 use fps_config::fps_settings_callback;
-use mov_config::spd_settings_callback;
 use mov_config::mov_settings_callback;
+use mov_config::spd_settings_callback;
 
 pub mod fps_config;
 pub mod fps_hooks;
@@ -29,7 +29,13 @@ pub fn main() {
         fps_hooks::get_player_max_speed_hook,
         fps_hooks::get_player_accel_hook,
         fps_hooks::get_player_decel_hook,
-        fps_hooks::get_player_rotate_speed_rate_hook
+        fps_hooks::get_player_rotate_speed_rate_hook,
+        // fps_hooks::hub_move_state_move_ctor,
+        // fps_hooks::hub_move_state_move_start,
+        // fps_hooks::hub_move_state_move_update,
+        // fps_hooks::hub_move_state_move_spline_loop_update,
+        fps_hooks::hub_move_state_move_spline_update,
+        fps_hooks::hub_move_state_move_is_end,
     );
     println!(
         "{}",
