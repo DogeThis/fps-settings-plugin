@@ -40,7 +40,8 @@ pub fn main() {
         fps_hooks::get_player_max_speed_hook,
         fps_hooks::get_player_accel_hook,
         fps_hooks::get_player_decel_hook,
-        fps_hooks::get_player_rotate_speed_rate_hook
+        fps_hooks::get_player_rotate_speed_rate_hook,
+        fps_hooks::hub_move_state_move_start,
     );
     println!(
         "{}",
