@@ -60,54 +60,76 @@ pub fn get_player_rotate_speed_rate_hook(method_info: OptionalMethod) -> f32 {
     return frametime_modifier().sqrt() * rotate_rate;
 }
 
-// #[unity::hook("App", "HubUtil", "get_PlayerDashStopTime")]
-// pub fn get_player_dash_stop_time_hook(method_info: OptionalMethod) -> f32 {
-//     let dash_stop_time = call_original!(method_info);
-
-//     // return speed_modifier() * dash_stop_time;
-//     return dash_stop_time;
-// }
-
-
 // NPC Handling
 
-// #[skyline::hook(offset = 0x23D3920)]
-// fn hub_move_state_move_spline_loop_ctor(
-//     this: *const u8,
-//     unit: *const u8,
-//     data: &Vector3<f32>,
-//     body_anim: Il2CppString,
-//     face_anim: Il2CppString,
-//     is_turn: bool,
-//     speed: f32,
-//     method_info: OptionalMethod,
-// ) {
-//     let modified_speed = speed_modifier() * speed;
-//     println!("I AM RUNNING!!!!!!!!!!!");
+#[repr(C)]
+pub struct AppHubMoveStateMoveO {
+    _padding1: [u8; 0x10],
+    _padding2: [u8; 0x8],
+    m_body_anim: Box<str>,
+    m_face_anim: Box<str>,
+    m_is_turn: bool,
+    m_resume: bool,
+    _padding3: [u8; 2],
+    m_speed: f32,
+    m_blend: f32,
+}
 
-//     call_original!(this, unit, data, body_anim, face_anim, is_turn, modified_speed, method_info);
-// }
+static mut HUB_MOVE_STATE_MOVE_CURRENT_FRAMETIMING: f32 = 2.0;
 
+// to get the actual float values, divide by 1000.
+const NPC_MOVE_WALK: i32 = 50;
+const NPC_MOVE_WALK_B: i32 = 60;
+const NPC_MOVE_GENERIC: i32 = 30;
+const NPC_POOL_STOP: i32 = 4;
+const NPC_POOL_STOP_B: i32 = 6;
+const NPC_POOL_LAUNCH: i32 = 140;
+const NPC_POOL_SWIM: i32 = 40;
+const NPC_POOL_SWIM_B: i32 = 20;
 
+// floating point pattern helper
+fn fpp_helper(float: f32) -> i32 {
+    return (float * 1000.0) as i32;
+}
 
-// #[repr(C)]
-// pub struct AppHubMoveStateMoveO {
-//     _padding: [u8; 0x3C], // offset
-//     m_speed: f32,
-// }
+#[unity::hook("App", "HubMoveStateMove", "Start")]
+pub fn hub_move_state_move_start(this: &mut AppHubMoveStateMoveO, resume: bool, method_info: OptionalMethod) {
+    let frametiming = get_frametiming();
+    unsafe {
+        // messy initialization
+        if HUB_MOVE_STATE_MOVE_CURRENT_FRAMETIMING == 2.0 {
+            HUB_MOVE_STATE_MOVE_CURRENT_FRAMETIMING = frametiming;
+        }
 
-// // App.HubMoveStateMove$$IsEnd    71028bfae0    bool App.HubMoveStateMove$$IsEnd(App_HubMoveStateMove_o * __this, MethodInfo * method)    268
-// #[unity::hook("App", "HubMoveStateMove", "IsEnd")]
-// pub fn hub_move_state_move_is_end(this: *mut AppHubMoveStateMoveO, method_info: OptionalMethod) -> bool {
-//     println!("I AM end, i am alive too!!!!!!!!!!!");
-//     // unsafe {
-//     //     // dereference the raw pointer to access the struct
-//     //     let this_ref = &mut *this;
-
-//     //     let result = call_original!(this, method_info);
-
-//     //     this_ref.m_speed *= 0.5;
-//     //     result
-//     // }
-//     return call_original!(this, method_info);
-// }
+        // fix transition from 60 to 30. currently broken
+        if (frametiming - HUB_MOVE_STATE_MOVE_CURRENT_FRAMETIMING) == 0.5 {
+            this.m_speed /= 0.5;
+        }
+        HUB_MOVE_STATE_MOVE_CURRENT_FRAMETIMING = frametiming;
+    }
+    
+    if frametiming == 1.0 {
+        if this.m_speed == 0.0030002 {
+            this.m_speed = 0.006;
+        }
+        return call_original!(this, resume, method_info);
+    } else {
+        match fpp_helper(this.m_speed) {
+            NPC_MOVE_WALK | NPC_MOVE_WALK_B |
+            NPC_POOL_SWIM | NPC_POOL_SWIM_B |
+            NPC_POOL_STOP | NPC_POOL_LAUNCH => {
+                this.m_speed *= frametiming;
+            },
+            NPC_MOVE_GENERIC if this.m_is_turn => {
+                this.m_speed *= frametiming;
+            },
+            NPC_POOL_STOP_B => {
+                this.m_speed *= frametiming;  // this one does NOT like being an odd number
+                this.m_speed += 0.0000002;
+            },
+            _ => {}
+        }
+    }
+    
+    call_original!(this, resume, method_info);
+}
