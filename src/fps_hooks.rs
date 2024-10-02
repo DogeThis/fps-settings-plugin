@@ -102,7 +102,6 @@ pub fn hub_move_state_move_start(this: &mut AppHubMoveStateMoveO, resume: bool, 
         if this.m_speed == 0.0030002 {
             this.m_speed = 0.006;
         }
-        println!("NEW Speed: {} {}", this.m_speed, this.m_is_turn);
         return call_original!(this, resume, method_info);
     } else {
         match fpp_helper(this.m_speed) {
@@ -133,5 +132,4 @@ pub fn hub_move_state_move_start(this: &mut AppHubMoveStateMoveO, resume: bool, 
     }
     
     call_original!(this, resume, method_info);
-    println!("NEW Speed: {} {}", this.m_speed, this.m_is_turn);
 }
