@@ -77,6 +77,16 @@ pub struct AppHubMoveStateMoveO {
 
 static mut HUB_MOVE_STATE_MOVE_CURRENT_FRAMETIMING: f32 = 2.0;
 
+// to get the actual float values, divide by 1000.
+const NPC_MOVE_WALK: i32 = 50;
+const NPC_MOVE_WALK_B: i32 = 60;
+const NPC_MOVE_GENERIC: i32 = 30;
+const NPC_POOL_STOP: i32 = 4;
+const NPC_POOL_STOP_B: i32 = 6;
+const NPC_POOL_LAUNCH: i32 = 140;
+const NPC_POOL_SWIM: i32 = 40;
+const NPC_POOL_SWIM_B: i32 = 20;
+
 // floating point pattern helper
 fn fpp_helper(float: f32) -> i32 {
     return (float * 1000.0) as i32;
@@ -105,27 +115,17 @@ pub fn hub_move_state_move_start(this: &mut AppHubMoveStateMoveO, resume: bool, 
         return call_original!(this, resume, method_info);
     } else {
         match fpp_helper(this.m_speed) {
-            50 | 60 => { // NPC Walk
+            NPC_MOVE_WALK | NPC_MOVE_WALK_B |
+            NPC_POOL_SWIM | NPC_POOL_SWIM_B |
+            NPC_POOL_STOP | NPC_POOL_LAUNCH => {
                 this.m_speed *= frametiming;
             },
-            30 if this.m_is_turn => {
+            NPC_MOVE_GENERIC if this.m_is_turn => {
                 this.m_speed *= frametiming;
             },
-            4 => { // NPC Pool Stop
-                this.m_speed *= frametiming;
-            },
-            6 => { // NPC Pool Stop
+            NPC_POOL_STOP_B => {
                 this.m_speed *= frametiming;  // this one does NOT like being an odd number
                 this.m_speed += 0.0000002;
-            },
-            140 => { // NPC Pool Kick-off
-                this.m_speed *= frametiming;
-            },
-            40 => { // NPC Pool
-                this.m_speed *= frametiming;
-            },
-            20 => { // NPC Pool
-                this.m_speed *= frametiming;
             },
             _ => {}
         }
