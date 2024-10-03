@@ -81,8 +81,12 @@ pub fn save_config<T: ToString>(filename: &str, value: T) {
     write_to_path(config_path(filename).as_str(), &value.to_string());
 }
 
-pub fn on_str() -> &'static Il2CppString { Mess::get("MID_CONFIG_TUTORIAL_ON") }
-pub fn off_str() -> &'static Il2CppString { Mess::get("MID_CONFIG_TUTORIAL_OFF") }
+pub fn on_str() -> &'static Il2CppString {
+    Mess::get("MID_CONFIG_TUTORIAL_ON")
+}
+pub fn off_str() -> &'static Il2CppString {
+    Mess::get("MID_CONFIG_TUTORIAL_OFF")
+}
 
 static EN_US: phf::Map<&str, &str> = phf_map! {
     "fps_name" => "Frame Rate (FPS)",
@@ -100,12 +104,12 @@ static JP: phf::Map<&str, &str> = phf_map! {
     "fps_name" => "フレームレート (FPS)",
     "fps_helptext_30" => "ゲームのデフォルト",
     "fps_helptext_60" => "より滑らかなゲームプレイ",
-    "mov_name" => "Accurate Movement",
-    "mov_helptext_off" => "30 FPS を超える正確な動きを使用しないでください.",
-    "mov_helptext_on" => "30 FPS を超える正確な動きを使用します.",
-    "spd_name" => "Accurate Speed",
-    "spd_helptext_off" => "Do not adjust movement speed at high frame rates.",
-    "spd_helptext_on" => "Adjust movement speed at high frame rates."
+    "mov_name" => "正確な動き",
+    "mov_helptext_off" => "30FPS以上の時、正確な動きを使用しません",
+    "mov_helptext_on" => "30FPS以上の時、正確な動きを使用します",
+    "spd_name" => "正確なスピード",
+    "spd_helptext_off" => "高フレームレートでの移動スピードを調整しません",
+    "spd_helptext_on" => "高フレームレートでの移動スピードを調整します"
 };
 
 static EU_FR: phf::Map<&str, &str> = phf_map! {
