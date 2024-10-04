@@ -26,7 +26,7 @@ fn get_frametiming_static() -> f32 {
 }
 
 fn speed_modifier() -> f32 {
-    match unsafe { ACCURATE_SPEED && CURRENT_FPS != 30 } {
+    match unsafe { ACCURATE_SPEED } {
         true => get_frametiming(),
         false => 1.0,
     }
