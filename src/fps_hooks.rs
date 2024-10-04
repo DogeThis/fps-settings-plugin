@@ -13,7 +13,15 @@ pub fn vsync_count_hook(_: i32, method_info: OptionalMethod) {
     call_original!(vsync, method_info);
 }
 
+#[skyline::from_offset(0x378EA40)]
+fn get_smooth_deltatime() -> f32;
+
 fn get_frametiming() -> f32 {
+    return 30.0 * unsafe { get_smooth_deltatime() } as f32;
+}
+// unsafe { println!("DELTA TIME BABYYYY: {}", get_deltatime()); }
+
+fn get_frametiming_static() -> f32 {
     return 30.0 / unsafe { CURRENT_FPS } as f32;
 }
 
@@ -25,7 +33,7 @@ fn speed_modifier() -> f32 {
 }
 
 fn frametime_modifier() -> f32 {
-    match unsafe { ACCURATE_MOVEMENT } {
+    match unsafe { ACCURATE_MOVEMENT && CURRENT_FPS != 30 } {
         true => get_frametiming().powi(2), // squaring ensures *most* of the other speed hooks work close to how they would at 30fps
         false => 1.0,
     }
@@ -94,7 +102,7 @@ fn fpp_helper(float: f32) -> i32 {
 
 #[unity::hook("App", "HubMoveStateMove", "Start")]
 pub fn hub_move_state_move_start(this: &mut AppHubMoveStateMoveO, resume: bool, method_info: OptionalMethod) {
-    let frametiming = get_frametiming();
+    let frametiming = get_frametiming_static();
     unsafe {
         // messy initialization
         if HUB_MOVE_STATE_MOVE_CURRENT_FRAMETIMING == 2.0 {
