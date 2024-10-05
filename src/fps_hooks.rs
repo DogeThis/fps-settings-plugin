@@ -33,7 +33,7 @@ fn speed_modifier() -> f32 {
 }
 
 fn frametime_modifier() -> f32 {
-    match unsafe { ACCURATE_MOVEMENT && CURRENT_FPS != 30 } {
+    match unsafe { ACCURATE_MOVEMENT } {
         true => get_frametiming().powi(2), // squaring ensures *most* of the other speed hooks work close to how they would at 30fps
         false => 1.0,
     }
