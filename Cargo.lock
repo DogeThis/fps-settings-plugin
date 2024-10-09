@@ -72,13 +72,13 @@ dependencies = [
 [[package]]
 name = "engage"
 version = "0.6.3"
-source = "git+https://github.com/DivineDragonFanClub/engage#4976a1f65d03afba1397c51560d5bcfcfb412819"
+source = "git+https://github.com/DivineDragonFanClub/engage#32fd5650070f5d944251d79ae4aa6f7601b75a19"
 dependencies = [
  "bitflags",
  "lazysimd",
  "modular-bitfield",
  "once_cell",
- "skyline 0.2.1 (git+https://github.com/Raytwo/skyline-rs?branch=preview)",
+ "skyline",
  "unity",
 ]
 
@@ -95,15 +95,15 @@ dependencies = [
  "cobapi",
  "engage",
  "phf",
- "skyline 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "skyline",
  "unity",
 ]
 
 [[package]]
 name = "hashbrown"
-version = "0.14.5"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e5274423e17b7c9fc20b6e7e208532f9b19825d82dfd615708b70edd83df41f1"
+checksum = "1e087f84d4f86bf4b218b927129862374b72199ae7d8657835f1e89000eea4fb"
 
 [[package]]
 name = "heck"
@@ -119,9 +119,9 @@ checksum = "cb56e1aa765b4b4f3aadfab769793b7087bb03a4ea4920644a6d238e2df5b9ed"
 
 [[package]]
 name = "indexmap"
-version = "2.5.0"
+version = "2.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68b900aa2f7301e21c36462b170ee99994de34dff39a4a6a528e80e7376d07e5"
+checksum = "707907fe3c25f5424cce2cb7e1cbcafee6bdbe735ca90ef77c29e84591e5b9da"
 dependencies = [
  "equivalent",
  "hashbrown",
@@ -139,7 +139,7 @@ version = "0.1.0"
 source = "git+https://github.com/Raytwo/lazysimd#3effca0fd2ebcd95d9b4113f4290e5865aa43792"
 dependencies = [
  "lazysimd_macro",
- "skyline 0.2.1 (git+https://github.com/Raytwo/skyline-rs?branch=preview)",
+ "skyline",
 ]
 
 [[package]]
@@ -202,26 +202,17 @@ dependencies = [
 
 [[package]]
 name = "nnsdk"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0f4537c7470ba25f406d42c8cbfe26f64099af4b613e715c6bcb3d25856896c"
-dependencies = [
- "libc-nnsdk 0.2.0",
-]
-
-[[package]]
-name = "nnsdk"
 version = "0.3.0"
-source = "git+https://github.com/ultimate-research/nnsdk-rs#bb0ee1d213393d1eaeb9b380064e97bfada199d1"
+source = "git+https://github.com/ultimate-research/nnsdk-rs#970d8f6f6e34f0204f2dc0860f575e2c1d2ec37b"
 dependencies = [
  "libc-nnsdk 0.3.0",
 ]
 
 [[package]]
 name = "once_cell"
-version = "1.19.0"
+version = "1.20.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3fdb12b2476b595f9358c5161aa467c2438859caa136dec86c26fdd2efe17b92"
+checksum = "1261fe7e33c73b354eab43b1273a57c8f967d0391e80353e51f764ac02cf6775"
 
 [[package]]
 name = "phf"
@@ -277,9 +268,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.86"
+version = "1.0.87"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e719e8df665df0d1c8fbfd238015744736151d4445ec0836b8e628aae103b77"
+checksum = "b3e4daa0dcf6feba26f985457cdf104d4b4256fc5a09547140f3631bb076b19a"
 dependencies = [
  "unicode-ident",
 ]
@@ -317,34 +308,11 @@ checksum = "38b58827f4464d87d377d175e90bf58eb00fd8716ff0a62f80356b5e61555d0d"
 [[package]]
 name = "skyline"
 version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9950fc129490cff3f4755aa523df16aeeb80130699abfc59cc7c6df8fc5802ad"
-dependencies = [
- "libc-nnsdk 0.2.0",
- "nnsdk 0.2.0",
- "skyline_macro 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "skyline"
-version = "0.2.1"
 source = "git+https://github.com/Raytwo/skyline-rs?branch=preview#3ce8983f65b649e58f20184bec176520846d4b2b"
 dependencies = [
  "libc-nnsdk 0.2.0",
- "nnsdk 0.3.0",
- "skyline_macro 0.2.0 (git+https://github.com/Raytwo/skyline-rs?branch=preview)",
-]
-
-[[package]]
-name = "skyline_macro"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9194b20ee17c1de2ed299cfd9b8b56160a35b5579b3273c416ab4e5c058844dc"
-dependencies = [
- "lazy_static",
- "proc-macro2",
- "quote",
- "syn 1.0.109",
+ "nnsdk",
+ "skyline_macro",
 ]
 
 [[package]]
@@ -442,7 +410,7 @@ source = "git+https://github.com/DivineDragonFanClub/unity#fd79cc94bf0804bff544e
 dependencies = [
  "lazysimd",
  "memoffset",
- "skyline 0.2.1 (git+https://github.com/Raytwo/skyline-rs?branch=preview)",
+ "skyline",
  "thiserror",
  "unity-macro",
 ]

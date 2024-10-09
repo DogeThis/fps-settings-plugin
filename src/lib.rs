@@ -1,4 +1,3 @@
-#![feature(lazy_cell)]
 #![feature(ptr_sub_ptr)]
 
 use fps_config::fps_settings_callback;
