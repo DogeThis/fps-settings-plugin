@@ -1,7 +1,6 @@
 [package]
 name = "fps-settings-plugin"
-version = "0.1.0"
-authors = []
+version = "1.1.0"
 edition = "2021"
 
 [package.metadata.skyline]
@@ -11,11 +10,20 @@ titleid = "0100a6301214e000" # Fire Emblem Engage
 crate-type = ["cdylib"]
 
 [dependencies]
-skyline = { git = "https://github.com/Raytwo/skyline-rs", branch = "preview" } # Contains the macros needed to install hooks.
-engage = { git = "https://github.com/DivineDragonFanClub/engage" } # Contains a set of functions and utilities to call the game's code.
-unity = { git = "https://github.com/DivineDragonFanClub/unity" } # Utilities to talk with Unity internals. You usually wouldn't need it unless what you want isn't in the engage crate.
-cobapi = { version = "0.3.0", git = "https://github.com/DivineDragonFanClub/cobapi" } # Utilities to talk with Cobalt. When new methods are added, you might need to increase the version to use opt-in to them.
-phf = { version = "0.11.2", features = ["macros"] }
+skyline = "0.6.0"
+engage-il2cpp = { git = "https://github.com/DivineDragonFanClub/engage-il2cpp", tag = "0.1.1" , features = [
+    "app-basicmenu",
+    "app-hubmovestatemove",
+    "app-hubutil",
+    "app-mess",
+    "root-configbasicmenuitem",
+    "system-collections-generic-dictionary_2",
+    "system-collections-generic-list_1",
+    "system-object",
+] }
+unity-nx = { git = "https://github.com/DivineDragonFanClub/unity-nx", tag = "0.1.1" }
+cobapi = { git = "https://github.com/DivineDragonFanClub/cobapi", tag = "0.1.2" }
+phf = { version = "0.14.0", features = ["macros"] }
 
 [profile.dev]
 panic = "abort"
@@ -23,4 +31,4 @@ panic = "abort"
 [profile.release]
 panic = "abort"
 lto = true
-opt-level = 1
+opt-level = 3

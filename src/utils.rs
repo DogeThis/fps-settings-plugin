@@ -1,15 +1,8 @@
-use std::fs::{self, OpenOptions};
-use std::{
-    fs::File,
-    io::{Read, Write},
-    path::Path,
-    str::FromStr,
-};
+use engage::app::Mess;
+use unity::prelude::*;
 
-use engage::mess::Mess;
-
+use std::{fs::{self, File, OpenOptions}, io::{Read, Write}, path::Path, str::FromStr};
 use phf::phf_map;
-use unity::system::Il2CppString;
 
 pub fn write_to_path(path: &str, data: &str) {
     let path = Path::new(path);
@@ -81,11 +74,11 @@ pub fn save_config<T: ToString>(filename: &str, value: T) {
     write_to_path(config_path(filename).as_str(), &value.to_string());
 }
 
-pub fn on_str() -> &'static Il2CppString {
-    Mess::get("MID_CONFIG_TUTORIAL_ON")
-}
-pub fn off_str() -> &'static Il2CppString {
-    Mess::get("MID_CONFIG_TUTORIAL_OFF")
+pub fn on_str(b: bool) -> Il2CppString {
+    match b {
+        true => Mess::get("MID_CONFIG_TUTORIAL_ON").to_string().into(),
+        false => Mess::get("MID_CONFIG_TUTORIAL_OFF").to_string().into() // when i don't do this nonsense, it doesn't return visible string in-game. idk
+    }
 }
 
 static EN_US: phf::Map<&str, &str> = phf_map! {
@@ -126,8 +119,7 @@ static EU_FR: phf::Map<&str, &str> = phf_map! {
 
 pub fn localize(key: &str) -> String {
     let map: &phf::Map<&str, &str> = match Mess::get_language_directory_name()
-        .get_string()
-        .unwrap()
+        .to_string()
         .to_lowercase()
         .as_str()
     {
