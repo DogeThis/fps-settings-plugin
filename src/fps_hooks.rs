@@ -1,15 +1,16 @@
 use crate::{ACCURATE_MOVEMENT, ACCURATE_SPEED, CURRENT_FPS};
-use unity::prelude::*;
+use unity::OptionalMethod;
+
+use engage::app::{HubMoveStateMove, IHubMoveStateMove};
 
 #[skyline::hook(offset = 0x250cda0)]
 pub fn vsync_count_hook(_: i32, method_info: OptionalMethod) {
-    let vsync = match unsafe { CURRENT_FPS } {
+    let vsync = match *CURRENT_FPS.lock().unwrap() {
         120 => 0, // hidden from menu, set via config---vsync 0 breaks everything...
         60  => 1,
         30  => 2,
         _   => 2, // fallback to 30 fps if invalid setting
     };
-
     call_original!(vsync, method_info);
 }
 
@@ -17,29 +18,27 @@ pub fn vsync_count_hook(_: i32, method_info: OptionalMethod) {
 fn get_smooth_deltatime() -> f32;
 
 fn get_frametiming() -> f32 {
-    return 30.0 * unsafe { get_smooth_deltatime() } as f32;
+    return 30.0 * unsafe { get_smooth_deltatime() };
 }
-// unsafe { println!("DELTA TIME BABYYYY: {}", get_deltatime()); }
 
 fn get_frametiming_static() -> f32 {
-    return 30.0 / unsafe { CURRENT_FPS } as f32;
+    return 30.0 / *CURRENT_FPS.lock().unwrap() as f32;
 }
 
 fn speed_modifier() -> f32 {
-    match unsafe { ACCURATE_SPEED } {
+    match *ACCURATE_SPEED.lock().unwrap() {
         true => get_frametiming(),
         false => 1.0,
     }
 }
 
 fn frametime_modifier() -> f32 {
-    match unsafe { ACCURATE_MOVEMENT } {
+    match *ACCURATE_MOVEMENT.lock().unwrap() {
         true => get_frametiming().powi(2), // squaring ensures *most* of the other speed hooks work close to how they would at 30fps
         false => 1.0,
     }
 }
 
-// App.HubUtil$$get_PlayerMaxSpeed	7102a5e820	float App.HubUtil$$get_PlayerMaxSpeed(MethodInfo * method)	96
 #[unity::hook("App", "HubUtil", "get_PlayerMaxSpeed")]
 pub fn get_player_max_speed_hook(method_info: OptionalMethod) -> f32 {
     let speed = call_original!(method_info);
@@ -70,19 +69,6 @@ pub fn get_player_rotate_speed_rate_hook(method_info: OptionalMethod) -> f32 {
 
 // NPC Handling
 
-#[repr(C)]
-pub struct AppHubMoveStateMoveO {
-    _padding1: [u8; 0x10],
-    _padding2: [u8; 0x8],
-    m_body_anim: Box<str>,
-    m_face_anim: Box<str>,
-    m_is_turn: bool,
-    m_resume: bool,
-    _padding3: [u8; 2],
-    m_speed: f32,
-    m_blend: f32,
-}
-
 static mut HUB_MOVE_STATE_MOVE_CURRENT_FRAMETIMING: f32 = 2.0;
 
 // to get the actual float values, divide by 1000.
@@ -101,7 +87,7 @@ fn fpp_helper(float: f32) -> i32 {
 }
 
 #[unity::hook("App", "HubMoveStateMove", "Start")]
-pub fn hub_move_state_move_start(this: &mut AppHubMoveStateMoveO, resume: bool, method_info: OptionalMethod) {
+pub fn hub_move_state_move_start(this: HubMoveStateMove, resume: bool, method_info: OptionalMethod) {
     let frametiming = get_frametiming_static();
     unsafe {
         // messy initialization
@@ -111,33 +97,44 @@ pub fn hub_move_state_move_start(this: &mut AppHubMoveStateMoveO, resume: bool, 
 
         // fix transition from 60 to 30. currently broken
         if (frametiming - HUB_MOVE_STATE_MOVE_CURRENT_FRAMETIMING) == 0.5 {
-            this.m_speed /= 0.5;
+            this.set_m_speed(this.m_speed() / 0.5);
         }
         HUB_MOVE_STATE_MOVE_CURRENT_FRAMETIMING = frametiming;
     }
     
     if frametiming == 1.0 {
-        if this.m_speed == 0.0030002 {
-            this.m_speed = 0.006;
+        if this.m_speed() == 0.0030002 {
+            this.set_m_speed(0.006);
         }
         return call_original!(this, resume, method_info);
     } else {
-        match fpp_helper(this.m_speed) {
+        match fpp_helper(this.m_speed()) {
             NPC_MOVE_WALK | NPC_MOVE_WALK_B |
             NPC_POOL_SWIM | NPC_POOL_SWIM_B |
             NPC_POOL_STOP | NPC_POOL_LAUNCH => {
-                this.m_speed *= frametiming;
+                this.set_m_speed(this.m_speed() * frametiming);
             },
-            NPC_MOVE_GENERIC if this.m_is_turn => {
-                this.m_speed *= frametiming;
+            NPC_MOVE_GENERIC if this.m_is_turn() => {
+                this.set_m_speed(this.m_speed() * frametiming);
             },
             NPC_POOL_STOP_B => {
-                this.m_speed *= frametiming;  // this one does NOT like being an odd number
-                this.m_speed += 0.0000002;
+                this.set_m_speed(this.m_speed() * frametiming);  // this one does NOT like being an odd number
+                this.set_m_speed(this.m_speed() + 0.0000002);
             },
             _ => {}
         }
     }
     
     call_original!(this, resume, method_info);
+}
+
+pub fn install() {
+    skyline::install_hooks!(
+        vsync_count_hook,
+        get_player_max_speed_hook,
+        get_player_accel_hook,
+        get_player_decel_hook,
+        get_player_rotate_speed_rate_hook,
+        hub_move_state_move_start,
+    );
 }

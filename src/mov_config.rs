@@ -1,101 +1,82 @@
+use engage::{prelude::*, root::configbasicmenuitem::*};
 use unity::prelude::*;
 
-use engage::menu::{
-    BasicMenuResult,
-    config::{
-        ConfigBasicMenuItem,
-        ConfigBasicMenuItemSwitchMethods
-    }
-};
-
 use crate::{
-    utils::{localize, off_str, on_str, save_config},
-    ACCURATE_MOVEMENT, ACCURATE_SPEED,
+    utils::save_config,
+    utils::localize,
+    utils::on_str,
+    ACCURATE_MOVEMENT,
 };
 
-pub struct MovSetting;
 
-impl ConfigBasicMenuItemSwitchMethods for MovSetting {
-    extern "C" fn custom_call(
-        this: &mut ConfigBasicMenuItem,
-        _method_info: OptionalMethod,
-    ) -> BasicMenuResult {
-        let accurate_movement = unsafe { ACCURATE_MOVEMENT };
+#[unity::inject(
+    namespace = "FPSPlugin",
+    name = "MovSetting",
+    parent = ConfigBasicMenuItem,
+)]
+pub struct MovSetting {}
 
-        let result = ConfigBasicMenuItem::change_key_value_b(accurate_movement);
+#[unity::injected_methods]
+impl MovSetting {
+    #[override_virtual(name = "GetName")]
+    pub fn get_name(self) -> Il2CppString { localize("mov_name").into() }
+    #[override_virtual(name = "ACall")]
+    pub fn a_call(self) -> BasicMenuResult { BasicMenuResult::new() }
+    #[override_virtual(name = "BuildAttribute")]
+    pub fn build_attribute(self) -> BasicMenuItemAttribute { BasicMenuItemAttribute::enable() }
+    #[override_virtual(name = "OnBuild")]
+    pub fn on_build(self) { self.init_content(); }
+    #[override_virtual(name = "InitContent")]
+    pub fn init_content(self) {
+        let value = *ACCURATE_MOVEMENT.lock().unwrap();
+        self.set_title_text(self.get_name());
+        self.refresh_text(value);
+    }
 
-        if accurate_movement != result {
-            unsafe { ACCURATE_MOVEMENT = result };
+    #[override_virtual(name = "CustomCall")]
+    pub fn custom_call(self) -> BasicMenuResult {
+        let value = *ACCURATE_MOVEMENT.lock().unwrap();
+        let result = ConfigBasicMenuItem::change_key_value_b(value);
+
+        if value != result {
+            *ACCURATE_MOVEMENT.lock().unwrap() = result;
             save_config("mov", result);
-            Self::set_help_text(this, None);
-            Self::set_command_text(this, None);
-            this.update_text();
+            self.refresh_text(result);
             BasicMenuResult::se_cursor()
         } else {
             BasicMenuResult::new()
         }
     }
+}
 
-    extern "C" fn set_command_text(this: &mut ConfigBasicMenuItem, _method_info: OptionalMethod) {
-        match unsafe { ACCURATE_MOVEMENT } {
-            true => this.command_text = on_str(),
-            false => this.command_text = off_str(),
-        }
-    }
-
-    extern "C" fn set_help_text(this: &mut ConfigBasicMenuItem, _method_info: OptionalMethod) {
-        match unsafe { ACCURATE_MOVEMENT } {
-            true => this.help_text = localize("mov_helptext_on").into(),
-            false => this.help_text = localize("mov_helptext_off").into(),
-        }
+impl MovSetting {
+    pub fn refresh_text(self, value: bool) {
+        let help_text = match value {
+            true => localize("mov_helptext_on"),
+            false => localize("mov_helptext_off"),
+        };
+        self.set_m_help_text(help_text.into());
+        self.set_m_command_text(on_str(value));
+        self.update_text();
     }
 }
 
-pub struct SpdSetting;
-
-impl ConfigBasicMenuItemSwitchMethods for SpdSetting {
-    extern "C" fn custom_call(
-        this: &mut ConfigBasicMenuItem,
-        _method_info: OptionalMethod,
-    ) -> BasicMenuResult {
-        let accurate_speed = unsafe { ACCURATE_SPEED };
-
-        let result = ConfigBasicMenuItem::change_key_value_b(accurate_speed);
-
-        if accurate_speed != result {
-            unsafe { ACCURATE_SPEED = result };
-            save_config("spd", result);
-            Self::set_help_text(this, None);
-            Self::set_command_text(this, None);
-            this.update_text();
-            BasicMenuResult::se_cursor()
-        } else {
-            BasicMenuResult::new()
-        }
+pub fn register_class() -> Class {
+    let result = cobapi::injection::register::<MovSetting>();
+    match result {
+        Ok(t) => t,
+        Err(_e) => panic!("Failed to register MovSetting"),
     }
-
-    extern "C" fn set_command_text(this: &mut ConfigBasicMenuItem, _method_info: OptionalMethod) {
-        match unsafe { ACCURATE_SPEED } {
-            true => this.command_text = on_str(),
-            false => this.command_text = off_str(),
-        }
-    }
-
-    extern "C" fn set_help_text(this: &mut ConfigBasicMenuItem, _method_info: OptionalMethod) {
-        match unsafe { ACCURATE_SPEED } {
-            true => this.help_text = localize("spd_helptext_on").into(),
-            false => this.help_text = localize("spd_helptext_off").into(),
-        }
-    }
-}
-
-#[no_mangle] // no_mangle is an attribute used to ask Rust not to modify your function name to facilitate communication with code from other sources.
-pub extern "C" fn mov_settings_callback() -> &'static mut ConfigBasicMenuItem {
-    // Your callback must return a ConfigBasicMenu, which you can acquire by using new_gauge or new_switch.
-    ConfigBasicMenuItem::new_switch::<MovSetting>(localize("mov_name"))
 }
 
 #[no_mangle]
-pub extern "C" fn spd_settings_callback() -> &'static mut ConfigBasicMenuItem {
-    ConfigBasicMenuItem::new_switch::<SpdSetting>(localize("spd_name"))
+pub extern "C" fn mov_settings_callback() -> ConfigBasicMenuItem {
+    let instance = MovSetting::instantiate().unwrap();
+    instance.try_cast::<ConfigBasicMenuItem>().unwrap()
+}
+
+pub fn install() {
+    register_class();
+    cobapi::install_game_setting(mov_settings_callback);
+    cobapi::install_global_game_setting(mov_settings_callback);
 }

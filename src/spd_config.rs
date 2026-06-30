@@ -2,24 +2,24 @@ use engage::{prelude::*, root::configbasicmenuitem::*};
 use unity::prelude::*;
 
 use crate::{
-    fps_hooks::vsync_count_hook,
     utils::save_config,
     utils::localize,
-    CURRENT_FPS,
+    utils::on_str,
+    ACCURATE_SPEED,
 };
 
 
 #[unity::inject(
     namespace = "FPSPlugin",
-    name = "FPSSetting",
+    name = "SpdSetting",
     parent = ConfigBasicMenuItem,
 )]
-pub struct FpsSetting {}
+pub struct SpdSetting {}
 
 #[unity::injected_methods]
-impl FpsSetting {
+impl SpdSetting {
     #[override_virtual(name = "GetName")]
-    pub fn get_name(self) -> Il2CppString { localize("fps_name").into() }
+    pub fn get_name(self) -> Il2CppString { localize("spd_name").into() }
     #[override_virtual(name = "ACall")]
     pub fn a_call(self) -> BasicMenuResult { BasicMenuResult::new() }
     #[override_virtual(name = "BuildAttribute")]
@@ -28,20 +28,19 @@ impl FpsSetting {
     pub fn on_build(self) { self.init_content(); }
     #[override_virtual(name = "InitContent")]
     pub fn init_content(self) {
-        let value = *CURRENT_FPS.lock().unwrap();
+        let value = *ACCURATE_SPEED.lock().unwrap();
         self.set_title_text(self.get_name());
         self.refresh_text(value);
     }
 
     #[override_virtual(name = "CustomCall")]
     pub fn custom_call(self) -> BasicMenuResult {
-        let value = *CURRENT_FPS.lock().unwrap();
-        let result = ConfigBasicMenuItem::change_key_value(value, 30, 60, 30);
+        let value = *ACCURATE_SPEED.lock().unwrap();
+        let result = ConfigBasicMenuItem::change_key_value_b(value);
 
         if value != result {
-            *CURRENT_FPS.lock().unwrap() = result;
-            vsync_count_hook(0, None);
-            save_config("fps", result);
+            *ACCURATE_SPEED.lock().unwrap() = result;
+            save_config("spd", result);
             self.refresh_text(result);
             BasicMenuResult::se_cursor()
         } else {
@@ -50,35 +49,34 @@ impl FpsSetting {
     }
 }
 
-impl FpsSetting {
-    pub fn refresh_text(self, fps: i32) {
-        let help_text = match fps {
-            30 => localize("fps_helptext_30"),
-            60 => localize("fps_helptext_60"),
-            _ => "How did you set this...?".to_string(),
+impl SpdSetting {
+    pub fn refresh_text(self, value: bool) {
+        let help_text = match value {
+            true => localize("spd_helptext_on"),
+            false => localize("spd_helptext_off"),
         };
         self.set_m_help_text(help_text.into());
-        self.set_m_command_text(fps.to_string().into());
+        self.set_m_command_text(on_str(value));
         self.update_text();
     }
 }
 
 pub fn register_class() -> Class {
-    let result = cobapi::injection::register::<FpsSetting>();
+    let result = cobapi::injection::register::<SpdSetting>();
     match result {
         Ok(t) => t,
-        Err(_e) => panic!("Failed to register FpsSetting"),
+        Err(_e) => panic!("Failed to register SpdSetting"),
     }
 }
 
 #[no_mangle]
-pub extern "C" fn fps_settings_callback() -> ConfigBasicMenuItem {
-    let instance = FpsSetting::instantiate().unwrap();
+pub extern "C" fn spd_settings_callback() -> ConfigBasicMenuItem {
+    let instance = SpdSetting::instantiate().unwrap();
     instance.try_cast::<ConfigBasicMenuItem>().unwrap()
 }
 
 pub fn install() {
     register_class();
-    cobapi::install_game_setting(fps_settings_callback);
-    cobapi::install_global_game_setting(fps_settings_callback);
+    cobapi::install_game_setting(spd_settings_callback);
+    cobapi::install_global_game_setting(spd_settings_callback);
 }
