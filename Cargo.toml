@@ -13,6 +13,7 @@ crate-type = ["cdylib"]
 skyline = "0.6.0"
 engage-il2cpp = { git = "https://github.com/DivineDragonFanClub/engage-il2cpp", tag = "0.1.1" , features = [
     "app-basicmenu",
+    "app-basicmenuitem",
     "app-hubmovestatemove",
     "app-hubutil",
     "app-mess",

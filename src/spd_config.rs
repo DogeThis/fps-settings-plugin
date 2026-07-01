@@ -1,4 +1,4 @@
-use engage::{prelude::*, root::configbasicmenuitem::*};
+use engage::{prelude::*, app::BasicMenu_Result, app::basicmenuitem::BasicMenuItem_Attribute, root::configbasicmenuitem::*};
 use unity::prelude::*;
 
 use crate::{
@@ -7,7 +7,6 @@ use crate::{
     utils::on_str,
     ACCURATE_SPEED,
 };
-
 
 #[unity::inject(
     namespace = "FPSPlugin",
@@ -21,9 +20,9 @@ impl SpdSetting {
     #[override_virtual(name = "GetName")]
     pub fn get_name(self) -> Il2CppString { localize("spd_name").into() }
     #[override_virtual(name = "ACall")]
-    pub fn a_call(self) -> BasicMenuResult { BasicMenuResult::new() }
+    pub fn a_call(self) -> BasicMenu_Result { BasicMenu_Result::pass() }
     #[override_virtual(name = "BuildAttribute")]
-    pub fn build_attribute(self) -> BasicMenuItemAttribute { BasicMenuItemAttribute::enable() }
+    pub fn build_attribute(self) -> BasicMenuItem_Attribute { BasicMenuItem_Attribute::enable() }
     #[override_virtual(name = "OnBuild")]
     pub fn on_build(self) { self.init_content(); }
     #[override_virtual(name = "InitContent")]
@@ -34,7 +33,7 @@ impl SpdSetting {
     }
 
     #[override_virtual(name = "CustomCall")]
-    pub fn custom_call(self) -> BasicMenuResult {
+    pub fn custom_call(self) -> BasicMenu_Result {
         let value = *ACCURATE_SPEED.lock().unwrap();
         let result = ConfigBasicMenuItem::change_key_value_b(value);
 
@@ -42,9 +41,9 @@ impl SpdSetting {
             *ACCURATE_SPEED.lock().unwrap() = result;
             save_config("spd", result);
             self.refresh_text(result);
-            BasicMenuResult::se_cursor()
+            BasicMenu_Result::se_cursor()
         } else {
-            BasicMenuResult::new()
+            BasicMenu_Result::pass()
         }
     }
 }
